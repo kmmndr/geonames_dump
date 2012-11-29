@@ -1,6 +1,6 @@
 
 namespace :geonames_dump do
-  desc 'Copy over the migration files and migrate'
+  desc 'Run db:migrate to be up-to-date'
   #task :migrate => [:environment, :copy_migrations, 'db:migrate']
   task :migrate => [:environment, 'db:migrate']
 
