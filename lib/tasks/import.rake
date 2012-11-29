@@ -168,7 +168,7 @@ namespace :geonames_dump do
       #require File.join(File.dirname(__FILE__), '../../vendor/plugins/ruby-progressbar/lib/progressbar')
       file_size = file_fd.stat.size
       #progress_bar = ProgressBar.new('Feature Import', file_size)
-      progress_bar = ProgressBar.create(:title => 'Feature Import', :total => file_size, :format => '%a |%b>>%i| %p%% %t')
+      progress_bar = ProgressBar.create(:title => 'Feature Import', :total => file_size, :format => '%a |%b>%i| %p%% %t')
 
       col_names = [
         :geonameid,
@@ -205,7 +205,7 @@ namespace :geonames_dump do
 
         # w00t! Friendly output FTW!
         #progress_bar.set(file_fd.pos)
-        progress_bar = file_fd.pos
+        progress_bar.progress = file_fd.pos
       end
     end
 
