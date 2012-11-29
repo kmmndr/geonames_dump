@@ -34,7 +34,7 @@ namespace :geonames_dump do
         VALID_FEATURES = %w[ADMIN1]
         feature_attrs = VALID_FEATURES & ENV.keys
         # Filter feature rows according to optional command line params.
-        insert_features(f, GeonamesFeature) do |feature|
+        insert_features(f, GeonamesFeature, :title => 'Features') do |feature|
           feature_attrs.all?{|attr| feature[attr.downcase.to_sym] == ENV[attr]}
         end
       end
@@ -54,7 +54,7 @@ namespace :geonames_dump do
           File.unlink(zip_file)
         end
         # Import into the database.
-        File.open(txt_file) {|f| insert_features(f, GeonamesCity)}
+        File.open(txt_file) {|f| insert_features(f, GeonamesCity, :title => "cities of #{population}")}
       end
     end
 
@@ -163,12 +163,11 @@ namespace :geonames_dump do
     end
     
     # Insert features from a file. Pass a block that returns true/false to include/exclude the feature.
-    def insert_features(file_fd, klass = GeonamesFeature, &block)
+    def insert_features(file_fd, klass = GeonamesFeature, options = {}, &block)
       # Setup nice progress output.
-      #require File.join(File.dirname(__FILE__), '../../vendor/plugins/ruby-progressbar/lib/progressbar')
       file_size = file_fd.stat.size
-      #progress_bar = ProgressBar.new('Feature Import', file_size)
-      progress_bar = ProgressBar.create(:title => 'Feature Import', :total => file_size, :format => '%a |%b>%i| %p%% %t')
+      title = options[:title] || 'Feature Import'
+      progress_bar = ProgressBar.create(:title => title, :total => file_size, :format => '%a |%b>%i| %p%% %t')
 
       col_names = [
         :geonameid,
