@@ -1,0 +1,2 @@
+class GeonamesCity < GeonamesFeature
+end
