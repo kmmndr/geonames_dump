@@ -16,4 +16,5 @@ Gem::Specification.new do |gem|
   gem.version       = GeonamesDump::VERSION
   gem.add_runtime_dependency 'ruby-progressbar'
   gem.add_runtime_dependency 'activerecord-reset-pk-sequence'
+  gem.add_runtime_dependency 'rubyzip'
 end
