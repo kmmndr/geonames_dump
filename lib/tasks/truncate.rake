@@ -14,7 +14,7 @@ namespace :geonames_dump do
       GeonamesAdmin1.delete_all #&& GeonamesAdmin1.reset_pk_sequence
     end
 
-    desc 'Import admin2 codes'
+    desc 'Truncate admin2 codes'
     task :admin2 => :environment do
       GeonamesAdmin2.delete_all #&& GeonamesAdmin2.reset_pk_sequence
     end

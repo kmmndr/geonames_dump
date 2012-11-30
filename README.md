@@ -43,7 +43,7 @@ If you need more fine grained control over the installation process you can run 
     rake geonames_dump:import:features     # Import feature data.
     rake geonames_dump:install             # Generate and install migrations, then download and import all data (except geonames:import:features)
     rake geonames_dump:truncate:admin1     # Truncate admin1 codes
-    rake geonames_dump:truncate:admin2     # Import admin2 codes
+    rake geonames_dump:truncate:admin2     # Truncate admin2 codes
     rake geonames_dump:truncate:all        # Truncate all geonames data.
     rake geonames_dump:truncate:cities     # Truncate cities informations
     rake geonames_dump:truncate:countries  # Truncate countries informations
