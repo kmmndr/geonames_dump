@@ -4,6 +4,8 @@ GeonamesDump import geographic data from geonames project into your application,
 It's a "gem" version of the application [brownbeagle/geonames](https://github.com/brownbeagle/geonames).
 Now you only need to include the dependency into your Gemfile and your project will include geonames.
 
+You're free to use [geocoder](https://github.com/alexreisner/geocoder) or [geokit](https://github.com/imajes/geokit) or any other geocoding solution.
+
 ## Installation
 
 Add this line to your application's Gemfile:
