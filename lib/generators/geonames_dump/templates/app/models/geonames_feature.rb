@@ -15,7 +15,12 @@ class GeonamesFeature < ActiveRecord::Base
     queries = queries.join(' ').split(' ')
 
     ret = by_name(*queries)
-    ret = ret.where(:country => GeonamesCountry.search(country).first.iso) unless country.nil?
+
+    unless country.nil?
+      geonames_country = GeonamesCountry.search(country).first
+      ret = ret.where(:country => geonames_country.iso) unless geonames_country.nil?
+    end
+
     ret
   }
 
