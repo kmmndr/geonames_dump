@@ -1,5 +1,4 @@
 namespace :geonames_dump do
-  desc 'Generate and install migrations, then download and import all data (except for geonames:import:features)'
-  #task :install => [:migrate, 'import:all']
-  task :install => ['truncate:all', 'import:all']
+  desc 'Truncate and install most of geonames data (country, admin1, admin2, cities)'
+  task :install => ['truncate:all', 'import:many']
 end

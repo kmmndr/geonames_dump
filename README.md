@@ -32,24 +32,27 @@ Import data (takes a loonnnng time!), it will download data, import countries an
 
 If you need more fine grained control over the installation process you can run individual geoname rake tasks instead of the all-in-one install :
 
-    rake -T |grep geonames_dump
-
+    $ rake -T | grep geonames_dump
+    
+    rake geonames_dump:import:all          # Import ALL geonames data.
+    rake geonames_dump:import:many         # Import most of geonames data.
+    
     rake geonames_dump:import:admin1       # Import admin1 codes
     rake geonames_dump:import:admin2       # Import admin2 codes
-    rake geonames_dump:import:all          # Import all geonames data.
     rake geonames_dump:import:cities       # Import all cities, regardless of population.
     rake geonames_dump:import:cities1000   # Import cities with population greater than 1000
     rake geonames_dump:import:cities15000  # Import cities with population greater than 15000
     rake geonames_dump:import:cities5000   # Import cities with population greater than 5000
-    rake geonames_dump:import:countries    # Import country information
+    rake geonames_dump:import:countries    # Import countries informations
     rake geonames_dump:import:features     # Import feature data.
-    rake geonames_dump:install             # Generate and install migrations, then download and import all data (except geonames:import:features)
+    
+    rake geonames_dump:truncate:all        # Truncate all geonames data.
+    rake geonames_dump:truncate:countries  # Truncate countries informations
     rake geonames_dump:truncate:admin1     # Truncate admin1 codes
     rake geonames_dump:truncate:admin2     # Truncate admin2 codes
-    rake geonames_dump:truncate:all        # Truncate all geonames data.
     rake geonames_dump:truncate:cities     # Truncate cities informations
-    rake geonames_dump:truncate:countries  # Truncate countries informations
     rake geonames_dump:truncate:features   # Truncate features informations
+
 
 
 ## Contributing

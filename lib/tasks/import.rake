@@ -18,19 +18,23 @@ namespace :geonames_dump do
       ]
     GEONAMES_ADMINS_COL_NAME = [ :code, :name, :asciiname, :geonameid ]
 
-    desc 'Build the geonames download cache directory'
-    task :build_cache do
+    desc 'Prepare everything to import data'
+    task :prepare do
       Dir::mkdir(CACHE_DIR) rescue nil
+      disable_logger
     end
 
-    desc 'Import all geonames data. Should be performed on a clean install.'
-    task :all => [:build_cache, :countries, :cities, :admin1, :admin2]
+    desc 'Import ALL geonames data.'
+    task :all => [:many, :features]
 
-    desc 'Import all cities, regardless of population. Download requires about 5M.'
-    task :cities => [:build_cache, :cities15000, :cities5000, :cities1000]
+    desc 'Import most of geonames data. Recommended after a clean install.'
+    task :many => [:prepare, :countries, :cities, :admin1, :admin2]
+
+    desc 'Import all cities, regardless of population.'
+    task :cities => [:prepare, :cities15000, :cities5000, :cities1000]
     
-    desc 'Import feature data. Specify Country ISO code for just a single country. NOTE: This task can take a long time!'
-    task :features => [:build_cache, :environment] do
+    desc 'Import feature data. Specify Country ISO code (example : COUNTRY=FR) for just a single country. NOTE: This task can take a long time!'
+    task :features => [:prepare, :environment] do
       download_file = ENV['COUNTRY'].present? ? ENV['COUNTRY'].upcase : 'allCountries'
       zip_filename = download_file+'.zip'
 
@@ -38,12 +42,8 @@ namespace :geonames_dump do
 
       # Import into the database.
       File.open(txt_file) do |f|
-        VALID_FEATURES = %w[ADMIN1]
-        feature_attrs = VALID_FEATURES & ENV.keys
-        # Filter feature rows according to optional command line params.
-#        insert_features(f, GeonamesFeature, :title => 'Features') do |feature|
-#          feature_attrs.all?{ |attr| feature[attr.downcase.to_sym] == ENV[attr]}
-#        end
+        #VALID_FEATURES = %w[ADMIN1]
+        #feature_attrs = VALID_FEATURES & ENV.keys
         # TODO: add feature selection
         insert_data(f, GEONAMES_FEATURES_COL_NAME, GeonamesCity, :title => "Features")
       end
@@ -52,7 +52,7 @@ namespace :geonames_dump do
     # geonames:import:citiesNNN where NNN is population size.
     %w[15000 5000 1000].each do |population|
       desc "Import cities with population greater than #{population}"
-      task "cities#{population}".to_sym => [:build_cache, :environment] do
+      task "cities#{population}".to_sym => [:prepare, :environment] do
 
         txt_file = get_or_download("http://download.geonames.org/export/dump/cities#{population}.zip")
 
@@ -63,7 +63,7 @@ namespace :geonames_dump do
       end
     end
 
-    desc 'Import country information'
+    desc 'Import countries informations'
     task :countries => :environment do
       txt_file = get_or_download('http://download.geonames.org/export/dump/countryInfo.txt')
 
@@ -74,7 +74,7 @@ namespace :geonames_dump do
     end
     
     desc 'Import admin1 codes'
-    task :admin1 => [:build_cache, :environment] do
+    task :admin1 => [:prepare, :environment] do
       txt_file = get_or_download('http://download.geonames.org/export/dump/admin1CodesASCII.txt')
 
       # Import into the database.
@@ -94,8 +94,8 @@ namespace :geonames_dump do
     end
 
     desc 'Import admin2 codes'
-    task :admin2 => [:build_cache, :environment] do
-      txt_file = get_or_download('http://download.geonames.org/export/dump/admin2CodesASCII.txt')
+    task :admin2 => [:prepare, :environment] do
+      txt_file = get_or_download('http://download.geonames.org/export/dump/admin2Codes.txt')
 
       # Import into the database.
       File.open(txt_file) do |f|
@@ -104,8 +104,8 @@ namespace :geonames_dump do
           if idx == 0
             country, admin1, admin2 = col_value.split('.')
             attributes[:country] = country.strip
-            attributes[:admin1] = admin1.strip
-            attributes[:admin2] = admin2.strip
+            attributes[:admin1] = admin1.strip #rescue nil
+            attributes[:admin2] = admin2.strip #rescue nil
           else
             attributes[GEONAMES_ADMINS_COL_NAME[idx]] = col_value
           end
@@ -114,6 +114,11 @@ namespace :geonames_dump do
     end
 
     private
+
+    def disable_logger
+      ActiveRecord::Base.logger = Logger.new('/dev/null')
+    end
+
 
     def get_or_download(url, options = {})
       filename = File.basename(url)
@@ -163,52 +168,6 @@ namespace :geonames_dump do
       res = Net::HTTP.start(url.host, url.port) {|http| http.request(req)}
       return res.body
     end
-    
-    # Insert features from a file. Pass a block that returns true/false to include/exclude the feature.
-    def insert_features(file_fd, klass = GeonamesFeature, options = {}, &block)
-      # Setup nice progress output.
-      file_size = file_fd.stat.size
-      title = options[:title] || 'Feature Import'
-      progress_bar = ProgressBar.create(:title => title, :total => file_size, :format => '%a |%b>%i| %p%% %t')
-
-      col_names = [
-        :geonameid,
-        :name,
-        :asciiname,
-        :alternatenames,
-        :latitude,
-        :longitude,
-        :feature_class,
-        :feature,
-        :country,
-        :cc2,
-        :admin1,
-        :admin2,
-        :admin3,
-        :admin4,
-        :population,
-        :elevation,
-        :gtopo30,
-        :timezone,
-        :modification
-      ]
-      file_fd.each_line do |line|
-        attributes = {}
-        line.strip.split("\t").each_with_index do |col_value, i|
-          col = col_names[i]
-          attributes[col] = col_value
-        end
-        
-        if (attributes[:feature] == "PPL")
-          klass = GeonamesCity
-        end
-        klass.create(attributes) #if filter?(attributes) && (block && block.call(attributes))
-
-        # w00t! Friendly output FTW!
-        #progress_bar.set(file_fd.pos)
-        progress_bar.progress = file_fd.pos
-      end
-    end
 
     def insert_data(file_fd, col_names, main_klass = GeonamesFeature, options = {}, &block)
       # Setup nice progress output.
@@ -239,8 +198,14 @@ namespace :geonames_dump do
           end
         end
 
-        # create object
-        klass.create(attributes) #if filter?(attributes) && (block && block.call(attributes))
+        # create or update object
+        if attributes.include?(:geonameid)
+          object = klass.find_or_initialize_by_geonameid(attributes) #if filter?(attributes) && (block && block.call(attributes))
+          object.update_attributes(attributes)
+          object.save if object.new_record? || object.changed?
+        else
+          klass.create(attributes) #if filter?(attributes) && (block && block.call(attributes))
+        end
 
         # move progress bar
         progress_bar.progress = file_fd.pos
