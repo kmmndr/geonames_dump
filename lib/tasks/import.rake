@@ -22,6 +22,7 @@ namespace :geonames_dump do
     task :prepare do
       Dir::mkdir(CACHE_DIR) rescue nil
       disable_logger
+      disable_validations if ENV['QUICK']
     end
 
     desc 'Import ALL geonames data.'
@@ -117,6 +118,10 @@ namespace :geonames_dump do
 
     def disable_logger
       ActiveRecord::Base.logger = Logger.new('/dev/null')
+    end
+
+    def disable_validations
+      ActiveRecord::Base.reset_callbacks(:validate)
     end
 
 
