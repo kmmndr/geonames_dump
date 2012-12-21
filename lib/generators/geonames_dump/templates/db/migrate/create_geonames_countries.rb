@@ -21,20 +21,18 @@ class CreateGeonamesCountries < ActiveRecord::Migration
       t.string :postal_code_format
       t.string :postal_code_regex
       t.string :languages
-      t.string :geonameid
+      t.integer :geonameid
       t.string :neighbours
       t.string :equivalent_fips_code
 
       t.timestamps
     end
 
+    add_index :geonames_countries, :geonameid
     add_index :geonames_countries, :country
   end
 
   def self.down
-    # TODO Do we need to remove index if we remove the table anyway?
-    remove_index :geonames_countries, :country
-
     drop_table :geonames_countries
   end
 end

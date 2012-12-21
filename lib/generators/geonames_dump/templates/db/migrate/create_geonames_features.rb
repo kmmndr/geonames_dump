@@ -41,24 +41,24 @@ class CreateGeonamesFeatures < ActiveRecord::Migration
       t.string :timezone
       t.timestamp :modification
       t.string :type
+      # OPTIMIZE: create another table for all names (alternate names)
+      t.string :asciiname_first_letters
+
 
       t.timestamps
     end
 
+    add_index :geonames_features, :geonameid
     add_index :geonames_features, :name
+    add_index :geonames_features, :asciiname
     add_index :geonames_features, :country
     add_index :geonames_features, :population
     add_index :geonames_features, :admin1
     add_index :geonames_features, :type
+    add_index :geonames_features, :asciiname_first_letters
   end
 
   def self.down
-    # TODO Do we need to remove index if we remove the table anyway?
-    remove_index :geonames_features, :admin1
-    remove_index :geonames_features, :population
-    remove_index :geonames_features, :country
-    remove_index :geonames_features, :name
-
     drop_table :geonames_features
   end
 end

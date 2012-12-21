@@ -203,6 +203,9 @@ namespace :geonames_dump do
           end
         end
 
+        # fill the 3 letters field for quick search
+        attributes[:asciiname_first_letters] = attributes[:asciiname][0...3] if attributes.include?(:asciiname) 
+
         # create or update object
         if attributes.include?(:geonameid)
           object = klass.find_or_initialize_by_geonameid(attributes) #if filter?(attributes) && (block && block.call(attributes))
