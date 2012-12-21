@@ -204,7 +204,7 @@ namespace :geonames_dump do
         end
 
         # fill the 3 letters field for quick search
-        attributes[:asciiname_first_letters] = attributes[:asciiname][0...3] if attributes.include?(:asciiname) 
+        attributes[:asciiname_first_letters] = attributes[:asciiname][0...3].downcase if attributes.include?(:asciiname) 
 
         # create or update object
         if attributes.include?(:geonameid)

@@ -32,7 +32,7 @@ class GeonamesFeature < ActiveRecord::Base
     count = queries.count
     queries.collect.with_index do |q, idx|
       query = idx == 0 ? "#{q}" : "%#{q}%"
-      ret = ret.where("asciiname_first_letters = ?", q[0...3])
+      ret = ret.where("asciiname_first_letters = ?", q[0...3].downcase)
       ret = ret.where("name LIKE ? or asciiname LIKE ?", query, query)
     end
     ret
