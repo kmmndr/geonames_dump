@@ -53,7 +53,28 @@ If you need more fine grained control over the installation process you can run 
     rake geonames_dump:truncate:cities     # Truncate cities informations
     rake geonames_dump:truncate:features   # Truncate features informations
 
+## Geonames data usage
 
+The above commands will import geonames data in your Rails application, in other words, this will create models and fill database with place/city/country informations.
+Now to find a city for example :
+
+    GeonamesFeature.search('paris')
+
+If your request is ambiguous, like not searching Dublin in Ireland but Dublin in the USA, you may specify country :
+
+    GeonamesFeature.search('dublin, us')
+
+Models available allows to specify the type of place you want to search for :
+
+- GeonamesAdmin1, for first level of adminstrative subdivision
+- GeonamesAdmin2, for second level of adminstrative subdivision
+- GeonamesCity, for city names
+- GeonamesFeature, for generic names including all the above
+- GeonamesCountry, for country names
+
+Searching for a city like dublin may be done using :
+
+    GeonamesCity.search('dublin')
 
 ## Contributing
 
