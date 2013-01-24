@@ -1,5 +1,6 @@
 class GeonamesFeature < ActiveRecord::Base
   validates_uniqueness_of :geonameid
+  before_save :set_asciiname_first_letters
 
   ##
   # Search for feature, searches might include country (separated by ',')
@@ -37,5 +38,12 @@ class GeonamesFeature < ActiveRecord::Base
     end
     ret
   }
+
+  ##
+  # Set first letters of name into index column
+  #
+  def set_asciiname_first_letters
+    self.asciiname_first_letters = self.asciiname[0...3].downcase unless self.asciiname.nil?
+  end
 
 end

@@ -33,7 +33,7 @@ namespace :geonames_dump do
 
     desc 'Import all cities, regardless of population.'
     task :cities => [:prepare, :cities15000, :cities5000, :cities1000]
-    
+
     desc 'Import feature data. Specify Country ISO code (example : COUNTRY=FR) for just a single country. NOTE: This task can take a long time!'
     task :features => [:prepare, :environment] do
       download_file = ENV['COUNTRY'].present? ? ENV['COUNTRY'].upcase : 'allCountries'
@@ -73,7 +73,7 @@ namespace :geonames_dump do
         insert_data(f, GEONAMES_COUNTRIES_COL_NAME, GeonamesCountry, :title => "Countries")
       end
     end
-    
+
     desc 'Import admin1 codes'
     task :admin1 => [:prepare, :environment] do
       txt_file = get_or_download('http://download.geonames.org/export/dump/admin1CodesASCII.txt')
@@ -165,7 +165,7 @@ namespace :geonames_dump do
         file.write(body)
       end
     end
-    
+
     def fetch(url)
       puts "Fetching #{url}"
       url = URI.parse(url)
@@ -202,9 +202,6 @@ namespace :geonames_dump do
             attributes[col] = col_value
           end
         end
-
-        # fill the 3 letters field for quick search
-        attributes[:asciiname_first_letters] = attributes[:asciiname][0...3].downcase if attributes.include?(:asciiname) 
 
         # create or update object
         if attributes.include?(:geonameid)
