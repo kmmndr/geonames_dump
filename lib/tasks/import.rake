@@ -1,6 +1,7 @@
 require 'net/http'
 require 'ruby-progressbar'
 require 'zip/zip'
+require 'geonames_dump'
 
 namespace :geonames_dump do
   namespace :import do
@@ -180,6 +181,10 @@ namespace :geonames_dump do
       title = options[:title] || 'Feature Import'
       progress_bar = ProgressBar.create(:title => title, :total => file_size, :format => '%a |%b>%i| %p%% %t')
 
+      # create block array
+      blocks = GeonamesDump::Blocks.new
+      line_counter = 0
+
       file_fd.each_line do |line|
         # prepare data
         attributes = {}
@@ -187,6 +192,8 @@ namespace :geonames_dump do
 
         # skip comments
         next if line.start_with?('#')
+
+        line_counter += 1
 
         # read values
         line.strip.split("\t").each_with_index do |col_value, idx|
@@ -204,16 +211,33 @@ namespace :geonames_dump do
         end
 
         # create or update object
-        if attributes.include?(:geonameid)
-          object = klass.find_or_initialize_by_geonameid(attributes) #if filter?(attributes) && (block && block.call(attributes))
-          object.update_attributes(attributes)
-          object.save if object.new_record? || object.changed?
-        else
-          klass.create(attributes) #if filter?(attributes) && (block && block.call(attributes))
+        #if filter?(attributes) && (block && block.call(attributes))
+        blocks.add_block do
+          if attributes.include?(:geonameid)
+            object = klass.where(geonameid: attributes[:geonameid]).first_or_initialize
+            object.update_attributes(attributes)
+            object.save if object.new_record? || object.changed?
+          else
+            klass.create(attributes)
+          end
+        end
+
+        # increase import speed by performing insert using transaction
+        if line_counter % 1000 == 0
+          ActiveRecord::Base.transaction do
+            blocks.call_and_reset
+          end
+          line_counter = 0
         end
 
         # move progress bar
         progress_bar.progress = file_fd.pos
+      end
+
+      unless blocks.empty?
+        ActiveRecord::Base.transaction do
+          blocks.call_and_reset
+        end
       end
     end
 
