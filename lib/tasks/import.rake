@@ -1,6 +1,6 @@
 require 'net/http'
 require 'ruby-progressbar'
-require 'zip/zip'
+require 'zip'
 require 'geonames_dump'
 
 namespace :geonames_dump do
@@ -150,7 +150,7 @@ namespace :geonames_dump do
 
     def unzip_file(file, destination)
       puts "unzipping #{file}"
-      Zip::ZipFile.open(file) do |zip_file|
+      Zip::File.open(file) do |zip_file|
         zip_file.each do |f|
           f_path = File.join(destination, f.name)
           FileUtils.mkdir_p(File.dirname(f_path))
