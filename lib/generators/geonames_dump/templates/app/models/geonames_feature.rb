@@ -5,7 +5,7 @@ class GeonamesFeature < ActiveRecord::Base
   ##
   # Search for feature, searches might include country (separated by ',')
   #
-  scope :search, lambda { |query| 
+  scope :search, lambda { |query|
     virgule = query.include? ','
 
     splited = virgule ? query.split(',') : [query]
@@ -19,7 +19,7 @@ class GeonamesFeature < ActiveRecord::Base
 
     unless country.nil?
       geonames_country = GeonamesCountry.search(country).first
-      ret = ret.where(:country => geonames_country.iso) unless geonames_country.nil?
+      ret = ret.where(:country_code => geonames_country.iso) unless geonames_country.nil?
     end
 
     ret

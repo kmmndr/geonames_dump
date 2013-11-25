@@ -8,9 +8,10 @@ namespace :geonames_dump do
     CACHE_DIR = "#{Rails.root}/db/geonames_cache"
 
     GEONAMES_FEATURES_COL_NAME = [
-        :geonameid, :name, :asciiname, :alternatenames, :latitude, :longitude, :feature_class,
-        :feature, :country, :cc2, :admin1, :admin2, :admin3, :admin4, :population, :elevation,
-        :gtopo30, :timezone, :modification
+        :geonameid, :name, :asciiname, :alternatenames, :latitude, :longitude,
+        :feature_class, :feature_code, :country_code, :cc2, :admin1_code,
+        :admin2_code, :admin3_code, :admin4_code, :population, :elevation,
+        :dem, :timezone, :modification
       ]
     GEONAMES_COUNTRIES_COL_NAME = [
         :iso, :iso3, :iso_numeric, :fips, :country, :capital, :area, :population, :continent,

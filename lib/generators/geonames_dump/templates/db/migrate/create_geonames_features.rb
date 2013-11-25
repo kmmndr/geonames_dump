@@ -1,5 +1,5 @@
 class CreateGeonamesFeatures < ActiveRecord::Migration
-
+  # http://download.geonames.org/export/dump/readme.txt
   # geonameid         : integer id of record in geonames database
   # name              : name of geographical point (utf8) varchar(200)
   # asciiname         : name of geographical point in plain ascii characters, varchar(200)
@@ -14,36 +14,36 @@ class CreateGeonamesFeatures < ActiveRecord::Migration
   # admin2 code       : code for the second administrative division, a county in the US, see file admin2Codes.txt; varchar(80) 
   # admin3 code       : code for third level administrative division, varchar(20)
   # admin4 code       : code for fourth level administrative division, varchar(20)
-  # population        : bigint (4 byte int) 
+  # population        : bigint (4 byte int)
   # elevation         : in meters, integer
-  # gtopo30           : average elevation of 30'x30' (ca 900mx900m) area in meters, integer
+  # dem               : digital elevation model, srtm3 or gtopo30, average elevation of 3''x3'' (ca 90mx90m) or 30''x30'' (ca 900mx900m) area in meters, integer. srtm processed by cgiar/ciat.
   # timezone          : the timezone id (see file timeZone.txt)
   # modification date : date of last modification in yyyy-MM-dd format
   def self.up
     create_table :geonames_features do |t|
       t.integer :geonameid
-      t.string :name
-      t.string :asciiname
-      t.string :alternatenames
+      t.string :name, length: 200
+      t.string :asciiname, length: 200
+      # OPTIMIZE: create another table for all names (alternate names)
+      t.string :alternatenames, length: 5000
       t.float :latitude
       t.float :longitude
       t.string :feature_class
-      t.string :feature
-      t.string :country
-      t.string :cc2
-      t.string :admin1
-      t.string :admin2
-      t.string :admin3
-      t.string :admin4
+      t.string :feature_code, length: 10
+      t.string :country_code
+      t.string :cc2, length: 60
+      t.string :admin1_code, length: 20
+      t.string :admin2_code, length: 80
+      t.string :admin3_code, length: 20
+      t.string :admin4_code, length: 20
       t.integer :population
       t.integer :elevation
-      t.integer :gtopo30
-      t.string :timezone
+      t.integer :dem
+      t.string :timezone, length: 40
       t.timestamp :modification
-      t.string :type
-      # OPTIMIZE: create another table for all names (alternate names)
-      t.string :asciiname_first_letters
 
+      t.string :type
+      t.string :asciiname_first_letters
 
       t.timestamps
     end
@@ -51,9 +51,9 @@ class CreateGeonamesFeatures < ActiveRecord::Migration
     add_index :geonames_features, :geonameid
     add_index :geonames_features, :name
     add_index :geonames_features, :asciiname
-    add_index :geonames_features, :country
+    add_index :geonames_features, :country_code
     add_index :geonames_features, :population
-    add_index :geonames_features, :admin1
+    add_index :geonames_features, :admin1_code
     add_index :geonames_features, :type
     add_index :geonames_features, :asciiname_first_letters
   end

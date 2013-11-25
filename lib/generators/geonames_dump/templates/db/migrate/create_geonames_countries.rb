@@ -1,8 +1,5 @@
-
-# http://download.geonames.org/export/dump/countryInfo.txt
-
 class CreateGeonamesCountries < ActiveRecord::Migration
-
+  # http://download.geonames.org/export/dump/countryInfo.txt
   def self.up
     create_table :geonames_countries do |t|
       t.string :iso
