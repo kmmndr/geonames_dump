@@ -39,6 +39,13 @@ class GeonamesFeature < ActiveRecord::Base
     ret
   }
 
+  def alternate_names
+    GeonamesAlternateName.where(geonameid: self.geonameid)
+  end
+
+
+  protected
+
   ##
   # Set first letters of name into index column
   #

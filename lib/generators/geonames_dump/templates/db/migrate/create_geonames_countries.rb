@@ -1,6 +1,6 @@
 class CreateGeonamesCountries < ActiveRecord::Migration
   # http://download.geonames.org/export/dump/countryInfo.txt
-  def self.up
+  def change
     create_table :geonames_countries do |t|
       t.string :iso
       t.string :iso3
@@ -26,10 +26,5 @@ class CreateGeonamesCountries < ActiveRecord::Migration
     end
 
     add_index :geonames_countries, :geonameid
-    add_index :geonames_countries, :country
-  end
-
-  def self.down
-    drop_table :geonames_countries
   end
 end

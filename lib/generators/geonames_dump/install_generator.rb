@@ -9,15 +9,15 @@ Description:
     Create Geonames initial migrations files and Geonames model files in your application
 DESC
       def copy_migrations_files
-        #template File.join('app', 'models', 'geonames_country.rb', 'config/initializers/piktur_config.rb'
-        %w(create_geonames_countries create_geonames_features).each do |file|
+        Dir.glob(File.join(File.expand_path(File.join('..', 'templates', 'db', 'migrate'), __FILE__), '*')).each do |full_path|
+          file = File.basename(full_path, File.extname(full_path))
           migration_template File.join('db', 'migrate', "#{file}.rb")
         end
       end
 
       def copy_models_files
-        #template File.join('app', 'models', 'geonames_country.rb', 'config/initializers/piktur_config.rb'
-        %w(geonames_admin1 geonames_admin2 geonames_city geonames_country geonames_feature).each do |file|
+        Dir.glob(File.join(File.expand_path(File.join('..', 'templates', 'app', 'models'), __FILE__), '*')).each do |full_path|
+          file = File.basename(full_path, File.extname(full_path))
           copy_file File.join('app', 'models', "#{file}.rb")
         end
       end
