@@ -37,7 +37,7 @@ class GeonamesAlternateName < ActiveRecord::Base
   # Get associated feature
   #
   def feature
-    GeonamesFeature.where(geonameid: self.geonameid)  
+    GeonamesFeature.where(geonameid: self.geonameid)
   end
 
   protected
