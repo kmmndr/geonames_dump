@@ -82,7 +82,7 @@ namespace :geonames_dump do
                                  txt_file: 'alternateNames.txt')
 
       File.open(txt_file) do |f|
-        insert_data(f, GEONAMES_ALTERNATE_NAMES_COL_NAME, GeonamesAlternateName, :title => "Alternate names")
+        insert_data(f, GEONAMES_ALTERNATE_NAMES_COL_NAME, GeonamesAlternateName, :title => "Alternate names", :buffer => 10000)
       end
     end
 
@@ -198,6 +198,7 @@ namespace :geonames_dump do
       # Setup nice progress output.
       file_size = file_fd.stat.size
       title = options[:title] || 'Feature Import'
+      buffer = options[:buffer] || 1000
       progress_bar = ProgressBar.create(:title => title, :total => file_size, :format => '%a |%b>%i| %p%% %t')
 
       # create block array
@@ -242,7 +243,7 @@ namespace :geonames_dump do
         end
 
         # increase import speed by performing insert using transaction
-        if line_counter % 1000 == 0
+        if line_counter % buffer == 0
           ActiveRecord::Base.transaction do
             blocks.call_and_reset
           end
