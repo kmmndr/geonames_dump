@@ -8,9 +8,14 @@ namespace :geonames_dump do
     CACHE_DIR = "#{Rails.root}/db/geonames_cache"
 
     GEONAMES_FEATURES_COL_NAME = [
-        :geonameid, :name, :asciiname, :alternatenames, :latitude, :longitude, :feature_class,
-        :feature, :country, :cc2, :admin1, :admin2, :admin3, :admin4, :population, :elevation,
-        :gtopo30, :timezone, :modification
+        :geonameid, :name, :asciiname, :alternatenames, :latitude, :longitude,
+        :feature_class, :feature_code, :country_code, :cc2, :admin1_code,
+        :admin2_code, :admin3_code, :admin4_code, :population, :elevation,
+        :dem, :timezone, :modification
+      ]
+    GEONAMES_ALTERNATE_NAMES_COL_NAME = [
+        :alternate_name_id, :geonameid, :isolanguage, :alternate_name,
+        :is_preferred_name, :is_short_name, :is_colloquial, :is_historic
       ]
     GEONAMES_COUNTRIES_COL_NAME = [
         :iso, :iso3, :iso_numeric, :fips, :country, :capital, :area, :population, :continent,
@@ -30,7 +35,7 @@ namespace :geonames_dump do
     task :all => [:many, :features]
 
     desc 'Import most of geonames data. Recommended after a clean install.'
-    task :many => [:prepare, :countries, :cities, :admin1, :admin2]
+    task :many => [:prepare, :countries, :cities15000, :admin1, :admin2]
 
     desc 'Import all cities, regardless of population.'
     task :cities => [:prepare, :cities15000, :cities5000, :cities1000]
@@ -44,8 +49,6 @@ namespace :geonames_dump do
 
       # Import into the database.
       File.open(txt_file) do |f|
-        #VALID_FEATURES = %w[ADMIN1]
-        #feature_attrs = VALID_FEATURES & ENV.keys
         # TODO: add feature selection
         insert_data(f, GEONAMES_FEATURES_COL_NAME, GeonamesCity, :title => "Features")
       end
@@ -58,7 +61,6 @@ namespace :geonames_dump do
 
         txt_file = get_or_download("http://download.geonames.org/export/dump/cities#{population}.zip")
 
-        # Import into the database.
         File.open(txt_file) do |f|
           insert_data(f, GEONAMES_FEATURES_COL_NAME, GeonamesCity, :title => "cities of #{population}")
         end
@@ -66,10 +68,29 @@ namespace :geonames_dump do
     end
 
     desc 'Import countries informations'
-    task :countries => :environment do
+    task :countries => [:prepare, :environment] do
       txt_file = get_or_download('http://download.geonames.org/export/dump/countryInfo.txt')
 
-      # Import into the database.
+      File.open(txt_file) do |f|
+        insert_data(f, GEONAMES_COUNTRIES_COL_NAME, GeonamesCountry, :title => "Countries")
+      end
+    end
+
+    desc 'Import alternate names'
+    task :alternate_names => [:prepare, :environment] do
+      txt_file = get_or_download('http://download.geonames.org/export/dump/alternateNames.zip',
+                                 txt_file: 'alternateNames.txt')
+
+      File.open(txt_file) do |f|
+        insert_data(f, GEONAMES_ALTERNATE_NAMES_COL_NAME, GeonamesAlternateName, :title => "Alternate names", :buffer => 10000)
+      end
+    end
+
+    desc 'Import iso language codes'
+    task :language_codes => [:prepare, :environment] do
+      txt_file = get_or_download('http://download.geonames.org/export/dump/alternateNames.zip',
+                                 txt_file: 'iso-languagecodes.txt')
+
       File.open(txt_file) do |f|
         insert_data(f, GEONAMES_COUNTRIES_COL_NAME, GeonamesCountry, :title => "Countries")
       end
@@ -79,15 +100,14 @@ namespace :geonames_dump do
     task :admin1 => [:prepare, :environment] do
       txt_file = get_or_download('http://download.geonames.org/export/dump/admin1CodesASCII.txt')
 
-      # Import into the database.
       File.open(txt_file) do |f|
         insert_data(f, GEONAMES_ADMINS_COL_NAME, GeonamesAdmin1, :title => "Admin1 subdivisions") do |klass, attributes, col_value, idx|
           col_value.gsub!('(general)', '')
           col_value.strip!
           if idx == 0
             country, admin1 = col_value.split('.')
-            attributes[:country] = country.strip
-            attributes[:admin1] = admin1.strip rescue nil
+            attributes[:country_code] = country.strip
+            attributes[:admin1_code] = admin1.strip rescue nil
           else
             attributes[GEONAMES_ADMINS_COL_NAME[idx]] = col_value
           end
@@ -99,15 +119,14 @@ namespace :geonames_dump do
     task :admin2 => [:prepare, :environment] do
       txt_file = get_or_download('http://download.geonames.org/export/dump/admin2Codes.txt')
 
-      # Import into the database.
       File.open(txt_file) do |f|
         insert_data(f, GEONAMES_ADMINS_COL_NAME, GeonamesAdmin2, :title => "Admin2 subdivisions") do |klass, attributes, col_value, idx|
           col_value.gsub!('(general)', '')
           if idx == 0
             country, admin1, admin2 = col_value.split('.')
-            attributes[:country] = country.strip
-            attributes[:admin1] = admin1.strip #rescue nil
-            attributes[:admin2] = admin2.strip #rescue nil
+            attributes[:country_code] = country.strip
+            attributes[:admin1_code] = admin1.strip #rescue nil
+            attributes[:admin2_code] = admin2.strip #rescue nil
           else
             attributes[GEONAMES_ADMINS_COL_NAME[idx]] = col_value
           end
@@ -179,6 +198,7 @@ namespace :geonames_dump do
       # Setup nice progress output.
       file_size = file_fd.stat.size
       title = options[:title] || 'Feature Import'
+      buffer = options[:buffer] || 1000
       progress_bar = ProgressBar.create(:title => title, :total => file_size, :format => '%a |%b>%i| %p%% %t')
 
       # create block array
@@ -223,7 +243,7 @@ namespace :geonames_dump do
         end
 
         # increase import speed by performing insert using transaction
-        if line_counter % 1000 == 0
+        if line_counter % buffer == 0
           ActiveRecord::Base.transaction do
             blocks.call_and_reset
           end

@@ -23,18 +23,21 @@ namespace :geonames_dump do
     task :cities => :environment do
       GeonamesCity.delete_all #&& GeonamesCity.reset_pk_sequence
     end
-    
+
     desc 'Truncate countries informations'
     task :countries => :environment do
       GeonamesCountry.delete_all && GeonamesCountry.reset_pk_sequence
     end
-    
+
     desc 'Truncate features informations'
     task :features => :environment do
       GeonamesFeature.delete_all && GeonamesFeature.reset_pk_sequence
     end
-    
-#    private
+
+    desc 'Truncate alternate names'
+    task :alternate_names => :environment do
+      GeonamesAlternateName.delete_all && GeonamesAlternateName.reset_pk_sequence
+    end
 
   end
 end
