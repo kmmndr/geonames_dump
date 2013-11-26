@@ -1,3 +1,4 @@
+require 'pry'
 module GeonamesDump
   module Generators
     class InstallGenerator < Rails::Generators::Base
@@ -11,7 +12,13 @@ DESC
       def copy_migrations_files
         Dir.glob(File.join(File.expand_path(File.join('..', 'templates', 'db', 'migrate'), __FILE__), '*')).each do |full_path|
           file = File.basename(full_path, File.extname(full_path))
-          migration_template File.join('db', 'migrate', "#{file}.rb")
+          migration_folder = File.join('db', 'migrate')
+
+          if self.class.migration_exists?(migration_folder, file)
+            say_status("skip", "Migration #{file} already exists", :yellow)
+          else
+            migration_template File.join(migration_folder, "#{file}.rb")
+          end
         end
       end
 
