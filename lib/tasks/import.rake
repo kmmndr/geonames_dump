@@ -124,9 +124,9 @@ namespace :geonames_dump do
           col_value.gsub!('(general)', '')
           if idx == 0
             country, admin1, admin2 = col_value.split('.')
-            attributes[:country] = country.strip
-            attributes[:admin1] = admin1.strip #rescue nil
-            attributes[:admin2] = admin2.strip #rescue nil
+            attributes[:country_code] = country.strip
+            attributes[:admin1_code] = admin1.strip #rescue nil
+            attributes[:admin2_code] = admin2.strip #rescue nil
           else
             attributes[GEONAMES_ADMINS_COL_NAME[idx]] = col_value
           end
