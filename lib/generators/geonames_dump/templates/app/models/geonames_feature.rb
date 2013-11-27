@@ -2,6 +2,9 @@ class GeonamesFeature < ActiveRecord::Base
   validates_uniqueness_of :geonameid
   before_save :set_asciiname_first_letters
 
+  has_many :geonames_alternate_names, :inverse_of => :geonames_feature
+  alias_method :alternate_names, :geonames_alternate_names
+
   ##
   # Search for feature, searches might include country (separated by ',')
   #
@@ -38,11 +41,6 @@ class GeonamesFeature < ActiveRecord::Base
     end
     ret
   }
-
-  def alternate_names
-    GeonamesAlternateName.where(geonameid: self.geonameid)
-  end
-
 
   protected
 
