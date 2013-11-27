@@ -24,7 +24,7 @@ class CreateGeonamesFeatures < ActiveRecord::Migration
       t.integer :geonameid
       t.string :name, length: 200
       t.string :asciiname, length: 200
-      t.string :alternatenames, length: 5000
+      t.text :alternatenames, length: 5000
       t.float :latitude
       t.float :longitude
       t.string :feature_class
