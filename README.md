@@ -89,13 +89,13 @@ Search order is the following :
 2. Alternate names (names in non-latin alphabets)
 3. First level admin subdivisions
 4. Second level admin subdivisions
-5. Countries
-6. Features (lakes, montains and others various features)
+5. Features (lakes, mountains and others various features)
 
 Now to find a city for example :
 
 ```
 GeonamesDump.search('paris')
+GeonamesDump.search('東京') # tokyo :-)
 ```
 
 If your request is ambiguous, like not searching Dublin in Ireland but Dublin
@@ -116,14 +116,22 @@ GeonamesDump.search('dublin, us', type: :city)
 GeonamesDump.search('paris', type: :feature)
 ```
 
+As `GeonamesDump.search` is returning `Feature` objects by default, type should
+specified to search for Countries :
+
+```
+GeonamesDump.search('Ireland', type: :country)
+```
+
 The following types are available :
 
-- admin1, for first level of adminstrative subdivision
-- admin2, for second level of adminstrative subdivision
-- city, for city names
-- feature, for generic names including all the above
-- alternate_name, for names in non-latin alphabets
-- country, for country names
+- `:admin1`, for first level of adminstrative subdivision
+- `:admin2`, for second level of adminstrative subdivision
+- `:city`, for city names
+- `:feature`, for generic names including all the above
+- `:auto`, to find any type of feature (even with non-latin characters) matching the query
+- `:alternate_name`, for names in non-latin alphabets (may be useless)
+- `:country`, for country names
 
 ## Contributing
 

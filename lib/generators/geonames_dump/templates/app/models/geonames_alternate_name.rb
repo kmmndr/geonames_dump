@@ -1,13 +1,15 @@
 class GeonamesAlternateName < ActiveRecord::Base
   validates_uniqueness_of :alternate_name_id
-  validates_uniqueness_of :geonameid
   before_save :set_alternate_name_first_letters
+
+  belongs_to :geonames_feature, :foreign_key => 'geonameid', :inverse_of => :geonames_alternate_names, :primary_key => 'geonameid'
+  alias_method :feature, :geonames_feature
 
   ##
   # default search (by alternate name)
   #
   scope :search, lambda { |q|
-    by_alternate_name(q)
+    by_alternate_name_featured(q)
   }
 
   ##
@@ -25,6 +27,13 @@ class GeonamesAlternateName < ActiveRecord::Base
   }
 
   ##
+  # search by name for available features
+  #
+  scope :by_alternate_name_featured, lambda { |q|
+    joins(:geonames_feature).by_alternate_name(q).where(GeonamesFeature.arel_table[:id].not_eq(nil))
+  }
+
+  ##
   # search by name
   #
   scope :by_alternate_name, lambda { |q|
@@ -32,13 +41,6 @@ class GeonamesAlternateName < ActiveRecord::Base
     ret = ret.where("alternate_name_first_letters = ?", q[0...3].downcase)
     ret = ret.where("alternate_name LIKE ?", "#{q}%")
   }
-
-  ##
-  # Get associated feature
-  #
-  def feature
-    GeonamesFeature.where(geonameid: self.geonameid)
-  end
 
   protected
 
