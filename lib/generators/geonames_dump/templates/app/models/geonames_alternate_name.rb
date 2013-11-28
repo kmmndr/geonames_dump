@@ -2,7 +2,10 @@ class GeonamesAlternateName < ActiveRecord::Base
   validates_uniqueness_of :alternate_name_id
   before_save :set_alternate_name_first_letters
 
-  belongs_to :geonames_feature, :foreign_key => 'geonameid', :inverse_of => :geonames_alternate_names, :primary_key => 'geonameid'
+  belongs_to :geonames_feature,
+    :inverse_of => :geonames_alternate_names,
+    :primary_key => 'geonameid',
+    :foreign_key => 'geonameid'
   alias_method :feature, :geonames_feature
 
   ##

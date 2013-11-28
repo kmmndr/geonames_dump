@@ -5,7 +5,7 @@ require 'geonames_dump'
 
 namespace :geonames_dump do
   namespace :import do
-    CACHE_DIR = "#{Rails.root}/db/geonames_cache"
+    CACHE_DIR = Rails.root.join('db', 'geonames_cache')
 
     GEONAMES_FEATURES_COL_NAME = [
         :geonameid, :name, :asciiname, :alternatenames, :latitude, :longitude,
@@ -28,7 +28,7 @@ namespace :geonames_dump do
     task :prepare do
       Dir::mkdir(CACHE_DIR) rescue nil
       disable_logger
-      disable_validations if ENV['QUICK']
+      disable_validations if ENV['SKIP_VALIDATION']
     end
 
     desc 'Import ALL geonames data.'
@@ -82,7 +82,12 @@ namespace :geonames_dump do
                                  txt_file: 'alternateNames.txt')
 
       File.open(txt_file) do |f|
-        insert_data(f, GEONAMES_ALTERNATE_NAMES_COL_NAME, GeonamesAlternateName, :title => "Alternate names", :buffer => 10000)
+        insert_data(f,
+                    GEONAMES_ALTERNATE_NAMES_COL_NAME,
+                    GeonamesAlternateName,
+                    :title => "Alternate names",
+                    :buffer => 10000,
+                    :primary_key => [:alternate_name_id, :geonameid])
       end
     end
 
@@ -199,6 +204,7 @@ namespace :geonames_dump do
       file_size = file_fd.stat.size
       title = options[:title] || 'Feature Import'
       buffer = options[:buffer] || 1000
+      primary_key = options[:primary_key] || :geonameid
       progress_bar = ProgressBar.create(:title => title, :total => file_size, :format => '%a |%b>%i| %p%% %t')
 
       # create block array
@@ -233,10 +239,19 @@ namespace :geonames_dump do
         # create or update object
         #if filter?(attributes) && (block && block.call(attributes))
         blocks.add_block do
-          if attributes.include?(:geonameid)
-            object = klass.where(geonameid: attributes[:geonameid]).first_or_initialize
-            object.update_attributes(attributes)
-            object.save if object.new_record? || object.changed?
+          primary_keys = primary_key.is_a?(Array) ? primary_key : [primary_key]
+          if primary_keys.all? { |key| attributes.include?(key) }
+            if ENV['QUICK']
+              object = klass.create(attributes)
+            else
+              where_condition = {}
+              primary_keys.each do |key|
+                where_condition[key] = attributes[key]
+              end
+              object = klass.where(where_condition).first_or_initialize
+              object.update_attributes(attributes)
+              object.save if object.new_record? || object.changed?
+            end
           else
             klass.create(attributes)
           end
