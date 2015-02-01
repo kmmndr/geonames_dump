@@ -1,6 +1,6 @@
 require "geonames_dump/version"
 require "geonames_dump/blocks"
-require "geonames_dump/railtie" #if defined?(Rails)
+require 'geonames_dump/railtie' if defined?(Rails)
 
 module GeonamesDump
   def self.search(query, options = {})
