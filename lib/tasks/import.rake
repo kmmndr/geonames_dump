@@ -142,7 +142,7 @@ namespace :geonames_dump do
     private
 
     def disable_logger
-      ActiveRecord::Base.logger = Logger.new('/dev/null')
+      ActiveRecord::Base.logger = Logger.new(RUBY_PLATFORM != 'i386-mingw32' ? '/dev/null' : 'NUL')
     end
 
     def disable_validations
