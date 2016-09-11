@@ -17,7 +17,8 @@ DESC
           if self.class.migration_exists?(migration_folder, file)
             say_status("skip", "Migration #{file} already exists", :yellow)
           else
-            migration_template File.join(migration_folder, "#{file}.rb")
+            srcdst = File.join(migration_folder, "#{file}.rb")
+            migration_template(srcdst, srcdst)
           end
         end
       end
