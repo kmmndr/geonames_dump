@@ -5,7 +5,7 @@ require 'geonames_dump'
 
 namespace :geonames_dump do
   namespace :import do
-    CACHE_DIR = Rails.root.join('db', 'geonames_cache')
+    CACHE_DIR = ENV.fetch('CACHE_DIR', Rails.root.join('db', 'geonames_cache'))
 
     GEONAMES_FEATURES_COL_NAME = [
         :geonameid, :name, :asciiname, :alternatenames, :latitude, :longitude,
